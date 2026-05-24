@@ -9,7 +9,7 @@ require("lazy").setup({
   {
     "modulomedito/rookie_enhance_nvimtree",
     dependencies = {
-      "nvim-tree/nvim-tree",
+      "nvim-tree/nvim-tree.lua",
     },
   },
 })
