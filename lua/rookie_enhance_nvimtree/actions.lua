@@ -369,4 +369,116 @@ function M.remove_buffers_not_under_root()
     end
 end
 
+local function get_path(args)
+    if args and args[1] and args[1] ~= "" then
+        return args[1]
+    end
+
+    if vim.bo.filetype == "nerdtree" and vim.g.NERDTreeFileNode then
+        local node = vim.fn["g:NERDTreeFileNode.GetSelected"]()
+        if node and node.path then
+            return node.path:str()
+        end
+    end
+
+    -- Support nvim-tree as well since it's common in modern setups
+    if vim.bo.filetype == "NvimTree" then
+        local status_ok, api = pcall(require, "nvim-tree.api")
+        if status_ok then
+            local node = api.tree.get_node_under_cursor()
+            if node and node.absolute_path then
+                return node.absolute_path
+            end
+        end
+    end
+
+    -- Support oil.nvim (since it's the default file browser)
+    if vim.bo.filetype == "oil" then
+        local status_ok, oil = pcall(require, "oil")
+        if status_ok then
+            local dir = oil.get_current_dir()
+            local entry = oil.get_cursor_entry()
+            if dir and entry then
+                return dir .. entry.name
+            elseif dir then
+                return dir
+            end
+        end
+    end
+
+    return vim.fn.expand("%:p")
+end
+
+function M.zip(...)
+    local path = get_path({ ... })
+    if not path or path == "" then
+        vim.api.nvim_err_writeln("No path provided")
+        return
+    end
+
+    path = vim.fn.fnamemodify(path, ":p")
+    -- remove trailing slash
+    path = path:gsub("[/\\]$", "")
+
+    local dir = vim.fn.fnamemodify(path, ":h")
+    local name = vim.fn.fnamemodify(path, ":t")
+    local sep = (vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1) and "\\"
+        or "/"
+    local zip_file = dir .. sep .. name .. ".zip"
+
+    if vim.fn.executable("7z") == 0 then
+        vim.api.nvim_err_writeln("7z is not found in PATH")
+        return
+    end
+
+    local cmd = { "7z", "a", zip_file, path }
+    vim.fn.jobstart(cmd, {
+        on_exit = function(_, code)
+            vim.schedule(function()
+                if code == 0 then
+                    print(string.format("Successfully zipped to %s", zip_file))
+                else
+                    vim.api.nvim_err_writeln(string.format("Failed to zip %s (exit code: %s)", path, code))
+                end
+            end)
+        end,
+    })
+    print(string.format("Zipping %s to %s...", path, zip_file))
+end
+
+function M.unzip(...)
+    local path = get_path({ ... })
+    if not path or path == "" then
+        vim.api.nvim_err_writeln("No path provided")
+        return
+    end
+
+    path = vim.fn.fnamemodify(path, ":p")
+
+    local dir = vim.fn.fnamemodify(path, ":h")
+    local name_no_ext = vim.fn.fnamemodify(path, ":t:r")
+    local sep = (vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1) and "\\"
+        or "/"
+    local out_dir = dir .. sep .. name_no_ext
+
+    if vim.fn.executable("7z") == 0 then
+        vim.api.nvim_err_writeln("7z is not found in PATH")
+        return
+    end
+
+    local cmd = { "7z", "x", path, "-o" .. out_dir }
+    vim.fn.jobstart(cmd, {
+        on_exit = function(_, code)
+            vim.schedule(function()
+                if code == 0 then
+                    print(string.format("Successfully unzipped to %s", out_dir))
+                else
+                    vim.api.nvim_err_writeln(string.format("Failed to unzip %s (exit code: %s)", path, code))
+                end
+            end)
+        end,
+    })
+    print(string.format("Unzipping %s to %s...", path, out_dir))
+end
+
 return M

@@ -53,6 +53,37 @@ function M.setup()
     vim.keymap.set("n", "<C-S-e>", ":NvimTreeFocus<CR>", { silent = true })
     vim.keymap.set("n", "<C-y>", ":NvimTreeToggle<CR>", { silent = true })
     vim.keymap.set("n", "<leader>find", ":NvimTreeFindFile<CR>", { silent = true })
+
+    -- 7zip Commands
+    vim.api.nvim_create_user_command(
+        "RkZip",
+        function(opts)
+            actions.zip(opts.args)
+        end,
+        {
+            nargs = "?",
+            complete = "file",
+            desc = "Zip file or directory using 7z",
+        }
+    )
+
+    vim.api.nvim_create_user_command("RkUnzip", function(opts)
+        actions.unzip(opts.args)
+    end, { nargs = "?", complete = "file", desc = "Unzip file using 7z" })
+
+    -- 7zip Keymaps
+    vim.keymap.set(
+        "n",
+        "<leader>mZ",
+        "<cmd>RkZip<CR>",
+        { desc = "7z: Zip current file/dir" }
+    )
+    vim.keymap.set(
+        "n",
+        "<leader>mz",
+        "<cmd>RkUnzip<CR>",
+        { desc = "7z: Unzip current file" }
+    )
 end
 
 return M
