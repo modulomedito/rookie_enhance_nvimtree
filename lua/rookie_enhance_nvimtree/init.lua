@@ -33,7 +33,7 @@ function M.setup(opts)
             git_ignored = false,
         },
         filesystem_watchers = {
-            enabled = false,
+            enable = false,
         }
     }
 
