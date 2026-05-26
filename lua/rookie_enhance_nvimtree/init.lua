@@ -32,6 +32,9 @@ function M.setup(opts)
             dotfiles = false,
             git_ignored = false,
         },
+        filesystem_watchers = {
+            enabled = false,
+        }
     }
 
     require("nvim-tree").setup(vim.tbl_deep_extend("force", default_opts, opts))
