@@ -312,33 +312,6 @@ function M.paste_system_clipboard_content()
     api.tree.reload()
 end
 
-function M.rename_node()
-    local api = require("nvim-tree.api")
-    local node = api.tree.get_node_under_cursor()
-    if not node then
-        return
-    end
-
-    local old_cwd = vim.fn.getcwd()
-    local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
-
-    if is_windows then
-        -- Move out of the current directory to avoid locking folders
-        vim.cmd("silent! cd ..")
-    end
-
-    -- nvim-tree's rename logic
-    api.fs.rename(node)
-
-    if is_windows then
-        -- Return to the original directory after the rename operation
-        -- Using schedule to ensure it happens after the interactive prompt
-        vim.schedule(function()
-            vim.cmd("silent! cd " .. vim.fn.fnameescape(old_cwd))
-        end)
-    end
-end
-
 function M.remove_buffers_not_under_root()
     local api = require("nvim-tree.api")
     local root_node = api.tree.get_nodes()

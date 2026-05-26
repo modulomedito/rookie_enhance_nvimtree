@@ -32,7 +32,6 @@ function M.on_attach(bufnr)
     end, opts("Change CWD and nvim-tree root to node"))
 
     vim.keymap.set("n", "L", "$", opts("Move to line end"))
-    vim.keymap.set("n", "r", actions.rename_node, opts("Rename node (with CD fix)"))
     vim.keymap.set("n", "<leader>mc", actions.copy_node_path, opts("Copy node path to clipboard"))
     vim.keymap.set("v", "<leader>mc", actions.copy_node_path, opts("Copy selected paths to clipboard"))
     vim.keymap.set("n", "<leader>mx", actions.cut_node, opts("Cut node"))
