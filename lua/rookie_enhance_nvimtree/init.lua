@@ -32,10 +32,12 @@ function M.setup(opts)
             dotfiles = false,
             git_ignored = false,
         },
-        -- If 0, makes nvim slow
-        -- filesystem_watchers = {
-        --     max_events = 0,
-        -- },
+        -- If max_events = 0, makes nvim slow
+        -- If debounce_delay = 50 (default), error messages will be shown
+        -- when switching between git branches
+        filesystem_watchers = {
+            debounce_delay = 5000,
+        },
     }
 
     require("nvim-tree").setup(vim.tbl_deep_extend("force", default_opts, opts))
